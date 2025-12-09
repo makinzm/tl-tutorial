@@ -1,4 +1,4 @@
-
+local _tl_compat; if (tonumber((_VERSION or ''):match('[%d.]*$')) or 0) < 5.3 then local p, m = pcall(require, 'compat53.module'); if p then _tl_compat = m end end; local math = _tl_compat and _tl_compat.math or math
 
 
 
@@ -154,6 +154,103 @@ local function demo_teal_module()
 end
 
 
+
+
+
+
+
+
+
+local function ok(value)
+   return {
+      success = true,
+      value = value,
+      error = "",
+   }
+end
+
+
+local function err(error_msg)
+   return {
+      success = false,
+      value = nil,
+      error = error_msg,
+   }
+end
+
+
+local function safe_divide(a, b)
+   if b == 0 then
+      return err("ゼロで除算しようとしました")
+   end
+   return ok(a / b)
+end
+
+
+local function safe_sqrt(x)
+   if x < 0 then
+      return err("負数の平方根は計算できません")
+   end
+   return ok(math.sqrt(x))
+end
+
+
+local function map_result(result, func)
+   if result.success then
+      return ok(func(result.value))
+   else
+      return err(result.error)
+   end
+end
+
+local function demo_result_type()
+   print("Result type demo:")
+
+
+   local result1 = safe_divide(10, 2)
+   if result1.success then
+      print("成功: 10 / 2 =", result1.value)
+   else
+      print("エラー:", result1.error)
+   end
+
+
+   local result2 = safe_divide(10, 0)
+   if result2.success then
+      print("成功: 10 / 0 =", result2.value)
+   else
+      print("エラー:", result2.error)
+   end
+
+
+   local result3 = safe_sqrt(16)
+   if result3.success then
+      print("成功: sqrt(16) =", result3.value)
+   else
+      print("エラー:", result3.error)
+   end
+
+   local result4 = safe_sqrt(-4)
+   if result4.success then
+      print("成功: sqrt(-4) =", result4.value)
+   else
+      print("エラー:", result4.error)
+   end
+
+
+   local chained = map_result(safe_sqrt(25), function(x)
+      return x * 2
+   end)
+   if chained.success then
+      print("チョーン成功: sqrt(25) * 2 =", chained.value)
+   else
+      print("チェーンエラー:", chained.error)
+   end
+
+   print()
+end
+
+
 local function main()
    print("=== TL版 Luaの特徴的機能デモ ===")
    print()
@@ -164,9 +261,12 @@ local function main()
    demo_first_class_functions()
    demo_oop()
    demo_teal_module()
+   demo_result_type()
 
    print("=== デモ終了 ===")
 end
+
+
 
 
 local module = {
@@ -174,6 +274,10 @@ local module = {
    MathUtils = MathUtils,
    Person = Person,
    Student = Student,
+   safe_divide = safe_divide,
+   safe_sqrt = safe_sqrt,
+   ok = ok,
+   err = err,
 }
 
 return module

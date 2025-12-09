@@ -153,6 +153,103 @@ local function demo_teal_module()
     print()
 end
 
+-- 5. Result型を使ったエラーハンドリングのデモ
+local type Result<T> = record
+    success: boolean
+    value: T
+    error: string
+end
+
+-- 成功結果を作成するヘルパー関数
+local function ok<T>(value: T): Result<T>
+    return {
+        success = true,
+        value = value,
+        error = ""
+    }
+end
+
+-- 失敗結果を作成するヘルパー関数
+local function err<T>(error_msg: string): Result<T>
+    return {
+        success = false,
+        value = nil,
+        error = error_msg
+    } as Result<T>
+end
+
+-- 割り算関数（ゼロ除算をエラーとして扱う）
+local function safe_divide(a: number, b: number): Result<number>
+    if b == 0 then
+        return err("ゼロで除算しようとしました") as Result<number>
+    end
+    return ok(a / b)
+end
+
+-- 数値の平方根関数（負数をエラーとして扱う）
+local function safe_sqrt(x: number): Result<number>
+    if x < 0 then
+        return err("負数の平方根は計算できません") as Result<number>
+    end
+    return ok(math.sqrt(x))
+end
+
+-- Resultをチェーンする関数（mapメソッドのようなもの）
+local function map_result<T, U>(result: Result<T>, func: function(T): U): Result<U>
+    if result.success then
+        return ok(func(result.value))
+    else
+        return err(result.error) as Result<U>
+    end
+end
+
+local function demo_result_type()
+    print("Result type demo:")
+    
+    -- 成功例
+    local result1 = safe_divide(10, 2)
+    if result1.success then
+        print("成功: 10 / 2 =", result1.value)
+    else
+        print("エラー:", result1.error)
+    end
+    
+    -- 失敗例
+    local result2 = safe_divide(10, 0)
+    if result2.success then
+        print("成功: 10 / 0 =", result2.value)
+    else
+        print("エラー:", result2.error)
+    end
+    
+    -- 平方根の例
+    local result3 = safe_sqrt(16)
+    if result3.success then
+        print("成功: sqrt(16) =", result3.value)
+    else
+        print("エラー:", result3.error)
+    end
+    
+    local result4 = safe_sqrt(-4)
+    if result4.success then
+        print("成功: sqrt(-4) =", result4.value)
+    else
+        print("エラー:", result4.error)
+    end
+    
+    -- Resultのチェーン例
+    local chained = map_result(safe_sqrt(25), function(x: number): number
+        return x * 2
+    end)
+    if chained.success then
+        print("チョーン成功: sqrt(25) * 2 =", chained.value)
+    else
+        print("チェーンエラー:", chained.error)
+    end
+    
+    print()
+end
+
 -- メイン関数
 local function main()
     print("=== TL版 Luaの特徴的機能デモ ===")
@@ -164,16 +261,23 @@ local function main()
     demo_first_class_functions()
     demo_oop()
     demo_teal_module()
+    demo_result_type()
     
     print("=== デモ終了 ===")
 end
+
+
 
 -- このモジュールをエクスポート（Luaから使用可能にする）
 local module = {
     main = main,
     MathUtils = MathUtils,
     Person = Person,
-    Student = Student
+    Student = Student,
+    safe_divide = safe_divide,
+    safe_sqrt = safe_sqrt,
+    ok = ok,
+    err = err
 }
 
 return module
