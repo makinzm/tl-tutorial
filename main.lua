@@ -80,6 +80,9 @@ local Person = {}
 
 
 
+
+
+
 function Person.new(name, age)
    local self = setmetatable({}, { __index = Person })
    self.name = name or ""
@@ -97,6 +100,9 @@ function Person:show_age()
 end
 
 local Student = {}
+
+
+
 
 
 

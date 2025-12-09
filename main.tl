@@ -77,6 +77,9 @@ end
 local record Person
     name: string
     age: number
+    new: function(string, number): Person
+    greet: function(self: Person): string
+    show_age: function(self: Person): number
 end
 
 -- Personのコンストラクタ（ドキュメント通りの実装）
@@ -100,6 +103,9 @@ local record Student
     name: string
     age: number
     student_id: string
+    new: function(string, number, string): Student
+    greet: function(self: Student): string
+    show_age: function(self: Student): number
 end
 
 -- Studentのコンストラクタ（Personを継承）
