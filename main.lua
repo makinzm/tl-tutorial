@@ -251,6 +251,143 @@ local function demo_result_type()
 end
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+local GameController = {}
+
+
+
+function GameController.new()
+   local self = setmetatable({}, { __index = GameController })
+   self.current_state = "MENU"
+   return self
+end
+
+function GameController:transition_to(new_state)
+   print("状態遷移: " .. self.current_state .. " -> " .. new_state)
+   self.current_state = new_state
+end
+
+function GameController:get_state_message()
+   if self.current_state == "MENU" then
+      return "メニュー画面です"
+   elseif self.current_state == "PLAYING" then
+      return "ゲームプレイ中です"
+   elseif self.current_state == "PAUSED" then
+      return "ゲームが一時停止中です"
+   elseif self.current_state == "GAME_OVER" then
+      return "ゲームオーバーです"
+   else
+      return "不明な状態です"
+   end
+end
+
+
+local function handle_http_response(status)
+   if status == "OK" then
+      return "200: リクエストが成功しました"
+   elseif status == "NOT_FOUND" then
+      return "404: リソースが見つかりません"
+   elseif status == "INTERNAL_ERROR" then
+      return "500: サーバー内部エラーです"
+   elseif status == "BAD_REQUEST" then
+      return "400: 不正なリクエストです"
+   else
+      return "不明なステータスです"
+   end
+end
+
+
+local Logger = {}
+
+
+
+function Logger.new(min_level)
+   local self = setmetatable({}, { __index = Logger })
+   self.min_level = min_level or "INFO"
+   return self
+end
+
+
+local function get_log_level_priority(level)
+   if level == "DEBUG" then return 1
+   elseif level == "INFO" then return 2
+   elseif level == "WARN" then return 3
+   elseif level == "ERROR" then return 4
+   else return 0
+   end
+end
+
+function Logger:log(level, message)
+   if get_log_level_priority(level) >= get_log_level_priority(self.min_level) then
+      print("[" .. level .. "] " .. message)
+   end
+end
+
+local function demo_enums()
+   print("Enum types demo:")
+
+
+   print("1. ゲーム状態管理:")
+   local game = GameController.new()
+   print(game:get_state_message())
+
+   game:transition_to("PLAYING")
+   print(game:get_state_message())
+
+   game:transition_to("PAUSED")
+   print(game:get_state_message())
+
+   game:transition_to("GAME_OVER")
+   print(game:get_state_message())
+
+   print()
+
+
+   print("2. HTTPステータスハンドリング:")
+   print(handle_http_response("OK"))
+   print(handle_http_response("NOT_FOUND"))
+   print(handle_http_response("INTERNAL_ERROR"))
+   print(handle_http_response("BAD_REQUEST"))
+
+   print()
+
+
+   print("3. ログシステム:")
+   local logger = Logger.new("INFO")
+
+   logger:log("DEBUG", "このメッセージは表示されません")
+   logger:log("INFO", "情報メッセージです")
+   logger:log("WARN", "警告メッセージです")
+   logger:log("ERROR", "エラーメッセージです")
+
+   print()
+end
+
+
 local function main()
    print("=== TL版 Luaの特徴的機能デモ ===")
    print()
@@ -262,6 +399,7 @@ local function main()
    demo_oop()
    demo_teal_module()
    demo_result_type()
+   demo_enums()
 
    print("=== デモ終了 ===")
 end
@@ -278,6 +416,9 @@ local module = {
    safe_sqrt = safe_sqrt,
    ok = ok,
    err = err,
+   GameController = GameController,
+   Logger = Logger,
+   handle_http_response = handle_http_response,
 }
 
 return module
