@@ -82,7 +82,7 @@ local record Person
     show_age: function(self: Person): number
 end
 
--- Personのコンストラクタ（ドキュメント通りの実装）
+-- Personのコンストラクタ
 function Person.new(name: string, age: number): Person
     local self: Person = setmetatable({}, { __index = Person })
     self.name = name or ""
